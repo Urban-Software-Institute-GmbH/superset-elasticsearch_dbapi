@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -131,6 +132,7 @@ class Cursor(BaseCursor):
     def __init__(self, url: str, es: Elasticsearch, **kwargs: Any) -> None:
         super().__init__(url, es, **kwargs)
         self.sql_path = kwargs.get("sql_path") or "_opendistro/_sql"
+        self.index_prefix = os.getenv("INDEX_PREFIX", "")
         # Opendistro SQL v2 flag
         self.v2 = kwargs.get("v2", False)
         if self.v2:
@@ -145,7 +147,7 @@ class Cursor(BaseCursor):
 
         https://github.com/preset-io/elasticsearch-dbapi/issues/38
         """
-        results = self.execute("SHOW TABLES LIKE %")
+        results = self.execute(f"SHOW TABLES LIKE {self.index_prefix}%")
         response = self.es.cat.indices(format="json")
 
         _results = []
